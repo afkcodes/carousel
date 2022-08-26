@@ -42,6 +42,8 @@ const App = () => {
   const [itemsToShow, setItemsToShow] = useState(0);
   const [slideOffSet, setSlideOffSet] = useState(0);
   const [totalItemsCount, setTotalItemsCount] = useState(data.length);
+  const [dotCount, setDotCount] = useState(0);
+  const [activeDotIndex, setActiveDotIndex] = useState(0);
 
   useEffect(() => {
     if (elementRef?.current) {
@@ -53,17 +55,30 @@ const App = () => {
       setParentDimension({ ...parentDimension, ...elementDimension });
     }
     if (window instanceof Window) {
-      setItemsToShow(Math.floor(parentDimension.width / childDimension.size));
+      const itemsToShow = Math.floor(
+        parentDimension.width / childDimension.size
+      );
+      setItemsToShow(itemsToShow);
+      setDotCount(Math.ceil(totalItemsCount / itemsToShow));
     }
   }, [windowSize.width]);
 
   console.log({ itemsToShow, slideOffSet, totalItemsCount });
 
+  const moveCarousel = () => {
+    if (totalItemsCount > itemsToShow) {
+      setSlideOffSet(slideOffSet + childDimension.size);
+      // setSlideOffSet(slideOffSet + itemsToShow * childDimension.size);
+      setTotalItemsCount(totalItemsCount - 1);
+      // setTotalItemsCount(totalItemsCount - itemsToShow);
+    }
+  };
+
   return (
     <>
       <div className='flex items-center mt-4'>
         <div
-          className={`flex items-center h-80 w-full bg-slate-300 overflow-hidden `}
+          className={`flex items-center h-40 w-full bg-slate-300 overflow-hidden `}
           ref={parentElementRef}>
           <div
             style={{ transform: `translateX(${-slideOffSet}px)` }}
@@ -71,9 +86,9 @@ const App = () => {
             {data.map((item, index) => (
               <div key={`${Math.random()}_${Date.now()}`}>
                 <div
-                  className='bg-teal-500 h-60 w-60 mx-2 flex items-center justify-center'
+                  className='bg-teal-500 h-20 w-20 mx-2 flex items-center justify-center'
                   ref={elementRef}>
-                  <span className='font-bold text-4xl'>
+                  <span className='font-bold text-2xl'>
                     {index + 1} - {itemsToShow}
                   </span>
                 </div>
@@ -82,15 +97,27 @@ const App = () => {
           </div>
         </div>
       </div>
+      {dotCount && (
+        <div className='flex items-center justify-center '>
+          {[...Array(dotCount).keys()].map((item, index) => (
+            <span
+              onClick={() => {
+                // setActiveDotIndex(activeDotIndex + 1);
+                moveCarousel();
+              }}
+              className={`${
+                index === activeDotIndex ? 'bg-red-500' : 'bg-gray-200'
+              } rounded-full h-1.5 w-1.5 mx-1 cursor-pointer`}></span>
+          ))}
+        </div>
+      )}
+
       <div className='flex items-center justify-center '>
         <button
-          className='bg-teal-500 my-12 p-2 text-xl '
+          className='bg-teal-500 my-4 p-2 text-xl '
           onClick={() => {
-            if (totalItemsCount > itemsToShow) {
-              setSlideOffSet(slideOffSet + childDimension.size);
-              // setSlideOffSet(slideOffSet + itemsToShow * childDimension.size);
-              setTotalItemsCount(totalItemsCount - 1);
-            }
+            // setActiveDotIndex(activeDotIndex + 1);
+            moveCarousel();
           }}>
           slide
         </button>
